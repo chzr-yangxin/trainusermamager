@@ -28,9 +28,9 @@ public class CustomRealm extends AuthorizingRealm {
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
-        String username = JWTUtil.getUsername(principalCollection.toString());
+        //String username = JWTUtil.getUsername(principalCollection.toString());
         //查询用户名称
-        YUserEntity user = userService.getUserByName(username);
+        YUserEntity user = (YUserEntity) principalCollection.getPrimaryPrincipal();
 
         // YUserEntity user = (YUserEntity) principalCollection.getPrimaryPrincipal();
         //添加角色和权限
@@ -73,6 +73,6 @@ public class CustomRealm extends AuthorizingRealm {
             throw new AuthenticationException("Username or password error");
         }
 
-        return new SimpleAuthenticationInfo(token, token, getName());
+        return new SimpleAuthenticationInfo(userBean, token, getName());
     }
 }
