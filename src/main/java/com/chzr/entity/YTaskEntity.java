@@ -14,4 +14,8 @@ public class YTaskEntity {
 
     @TableField("title")
     private String title;
+
+    @TableField("orders")
+    private String orders;
+
 }
