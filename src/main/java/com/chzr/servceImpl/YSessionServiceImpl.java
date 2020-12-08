@@ -34,4 +34,12 @@ public class YSessionServiceImpl extends ServiceImpl<YSessionMapper, YSessionEnt
         query.eq("logintype", "computerlogin");
         sessionMapper.delete(query);
     }
+
+    @Override
+    public void DeleteComputerSessionByRoleid(String roleid) {
+        QueryWrapper<YSessionEntity> query = new QueryWrapper<>();
+        query.eq("logintype", "computerlogin");
+        query.eq("roleid", roleid);
+        sessionMapper.delete(query);
+    }
 }

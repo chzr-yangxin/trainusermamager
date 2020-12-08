@@ -39,4 +39,7 @@ public class YTaskResultEntity {
 
     @TableField("ctime")
     private Date ctime;
+
+    @TableField("tasktype")
+    private String tasktype;
 }

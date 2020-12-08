@@ -6,6 +6,7 @@ import com.chzr.common.ResponseData;
 import com.chzr.common.ResponseUtil;
 import com.chzr.entity.*;
 import com.chzr.service.*;
+import com.sun.org.glassfish.gmbal.ParameterNames;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +36,12 @@ public class YTaskController {
     }
 
     @RequestMapping(value = "/sendtask/{taskid}", method = RequestMethod.POST)
-    private ResponseData SendTask(@PathVariable String taskid){
+    private ResponseData SendTask(@PathVariable String taskid, @ParameterNames String tasktype){
         YTaskEntity task = taskService.getById(taskid);
+
+        if(tasktype == null || tasktype.equals("")){
+            tasktype = "实训";
+        }
 
         ResponseData res = null;
         if(task != null){
@@ -52,6 +57,7 @@ public class YTaskController {
                     tr.setCheckname(task.getTitle());
                     tr.setScore(0.0f);
                     tr.setStatus(0);
+                    tr.setTasktype(tasktype);
                     if(ses.getUserid().equals("--")){
                         tr.setStatus(1);
                     }

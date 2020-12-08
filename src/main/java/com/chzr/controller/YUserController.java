@@ -84,6 +84,12 @@ public class YUserController {
         return ResponseUtil.OK(null);
     }
 
+    @RequestMapping(value = "/computerlogout")
+    private ResponseData ComputerLogout(String roleid){
+        sessionService.DeleteComputerSessionByRoleid(roleid);
+        return ResponseUtil.OK(null);
+    }
+
     @RequestMapping("/userinfo")
     private ResponseData GetUserInfo(){
         YUserEntity user = (YUserEntity)SecurityUtils.getSubject().getPrincipal();
