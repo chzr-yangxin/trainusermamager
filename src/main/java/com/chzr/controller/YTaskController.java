@@ -57,6 +57,8 @@ public class YTaskController {
                 if (sesses.size() != 5) {
                     res = ResponseUtil.FAIL("登录角色不完整！");
                 } else {
+                    YTaskDetailEntity firstDetail = null;
+
 
                     String orderstr = task.getOrders();
                     String[] orderArr = orderstr.split(",");
@@ -72,13 +74,15 @@ public class YTaskController {
                     tr.setTasksteps(orderArr.length);
                     tr.setTasktype(tasktype);
                     taskRunService.save(tr);
+
                     for (int i = 0; i < orderArr.length; i++) {
                         String roleid = orderArr[i];
                         YTaskDetailEntity dt = new YTaskDetailEntity();
                         YSessionEntity ses = sessionService.GetSessionByRoleId(roleid);
                         if(ses != null){
+                            Integer iscomputer = ses.getLogintype().equals("computerlogin") ? 1 : 0;
                             dt.setCtime(ctime);
-                            dt.setIscomputer(ses.getLogintype().equals("computerlogin") ? 1 : 0);
+                            dt.setIscomputer(iscomputer);
                             dt.setRoleid(roleid);
                             dt.setRunid(tr.getId());
                             dt.setScore(0.0f);
@@ -86,9 +90,16 @@ public class YTaskController {
                             dt.setTaskstep(i);
                             dt.setUserid(ses.getUserid());
                             taskDetailService.save(dt);
+                            if(i == 0 && iscomputer == 1){
+                                firstDetail = dt;
+                            }
                         }
                     }
                     res = ResponseUtil.OK(null);
+                    /// 如果第一步为电脑需要给她进行评分操作！
+                    if(firstDetail != null){
+                        this.ScoreResult(firstDetail.getId(), 0.0f);
+                    }
                 }
             } else {
                 res = ResponseUtil.FAIL("任务不存在！");
@@ -206,13 +217,18 @@ public class YTaskController {
 
         JSONObject obj = new JSONObject();
         List<YTaskDetailEntity> tasks = new ArrayList<>();
-        if(user != null) {
-            tasks = taskDetailService.GetDetailByUserId(user.getId());
-            if(tasks.size() > 0){
-                YTaskRunEntity runtask = taskRunService.getById(tasks.get(0).getRunid());
-                obj.put("task", runtask);
+
+        YSessionEntity sess = sessionService.GetSessionByRoleId(user.getRoleid());
+        // 存在用户session才能接受任务
+        if(sess != null) {
+            if (user != null) {
+                tasks = taskDetailService.GetDetailByUserId(user.getId());
+                if (tasks.size() > 0) {
+                    YTaskRunEntity runtask = taskRunService.getById(tasks.get(0).getRunid());
+                    obj.put("task", runtask);
+                }
+                obj.put("mysteps", tasks);
             }
-            obj.put("mysteps", tasks);
         }
         return ResponseUtil.OK(obj);
     }
@@ -225,19 +241,21 @@ public class YTaskController {
             dt.setStatus(1);
             taskDetailService.updateById(dt);
             //////
-            Integer nextStep = dt.getTaskstep() + 1;
             YTaskRunEntity runtask = taskRunService.getById(dt.getRunid());
-            if(runtask != null){
-                Integer lastStep = runtask.getTasksteps();
-                if(nextStep > lastStep){
-                    // 任务执行完毕
-                    runtask.setTaskstatus("已完成");
-                    runtask.setFtime(new Date());
-                    taskRunService.updateById(runtask);
-                }else{
-                    runtask.setCurstep(nextStep);
-                    taskRunService.updateById(runtask);
-                }
+
+            Integer nextStep = taskDetailService.GetNextStep(dt.getRunid(), dt.getTaskstep());
+
+            if(nextStep == -1) {
+                taskDetailService.UpdateStatusGtStep(dt.getRunid(), dt.getTaskstep());
+                // 任务执行完毕
+                runtask.setTaskstatus("已完成");
+                runtask.setCurstep(runtask.getTasksteps());
+                runtask.setFtime(new Date());
+                taskRunService.updateById(runtask);
+            }else {
+                runtask.setCurstep(nextStep);
+                taskRunService.updateById(runtask);
+                taskDetailService.UpdateStatusLtStep(dt.getRunid(), nextStep);
             }
         }
 

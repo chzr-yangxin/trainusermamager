@@ -1,6 +1,7 @@
 package com.chzr.servceImpl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chzr.entity.YTaskDetailEntity;
 import com.chzr.mapper.YTaskDetailMapper;
@@ -31,5 +32,41 @@ public class YTaskDetailServiceImpl extends ServiceImpl<YTaskDetailMapper, YTask
         query.orderByAsc("taskstep");
         List<YTaskDetailEntity> details = taskDetailMapper.selectList(query);
         return details;
+    }
+
+    @Override
+    public Integer GetNextStep(String runnid, Integer curstep) {
+        QueryWrapper<YTaskDetailEntity> query = new QueryWrapper<>();
+        query.eq("runid", runnid);
+        query.eq("iscomputer", 0);
+        query.gt("taskstep", curstep);
+        query.orderByAsc("taskstep");
+        List<YTaskDetailEntity> details = taskDetailMapper.selectList(query);
+        if(details.size() > 0){
+            return details.get(0).getTaskstep();
+        }
+        return -1;
+    }
+
+    @Override
+    public void UpdateStatusGtStep(String runnid, Integer curstep) {
+        UpdateWrapper<YTaskDetailEntity> query = new UpdateWrapper<>();
+        query.gt("taskstep", curstep);
+        query.eq("runid", runnid);
+        query.set("status", 1);
+        YTaskDetailEntity d = new YTaskDetailEntity();
+        d.setStatus(1);
+        taskDetailMapper.update(d, query);
+    }
+
+    @Override
+    public void UpdateStatusLtStep(String runnid, Integer curstep) {
+        UpdateWrapper<YTaskDetailEntity> query = new UpdateWrapper<>();
+        query.lt("taskstep", curstep);
+        query.eq("runid", runnid);
+        query.set("status", 1);
+        YTaskDetailEntity d = new YTaskDetailEntity();
+        d.setStatus(1);
+        taskDetailMapper.update(d, query);
     }
 }
