@@ -15,4 +15,6 @@ public interface YTaskDetailService extends IService<YTaskDetailEntity> {
     public void UpdateStatusGtStep(String runnid, Integer curstep);
 
     public void UpdateStatusLtStep(String runnid, Integer curstep);
+
+    public void DeleteByRunid(String runid);
 }

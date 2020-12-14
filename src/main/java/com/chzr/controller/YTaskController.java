@@ -311,4 +311,14 @@ public class YTaskController {
 //        }
         return ResponseUtil.OK(obj);
     }
+
+    @RequestMapping(value = "/deletetask/{id}", method = RequestMethod.DELETE)
+    private ResponseData DeleteTask(@PathVariable String id){
+        YTaskRunEntity runtask = taskRunService.getById(id);
+        if(runtask != null){
+            taskRunService.removeById(id);
+            taskDetailService.DeleteByRunid(id);
+        }
+        return ResponseUtil.OK(null);
+    }
 }

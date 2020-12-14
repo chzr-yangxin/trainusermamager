@@ -69,4 +69,11 @@ public class YTaskDetailServiceImpl extends ServiceImpl<YTaskDetailMapper, YTask
         d.setStatus(1);
         taskDetailMapper.update(d, query);
     }
+
+    @Override
+    public void DeleteByRunid(String runid) {
+        QueryWrapper<YTaskDetailEntity> query = new QueryWrapper<>();
+        query.eq("runid", runid);
+        taskDetailMapper.delete(query);
+    }
 }
