@@ -237,11 +237,17 @@ public class YTaskController {
     private ResponseData ScoreResult(@PathVariable String resid, @RequestParam Float score){
         YTaskDetailEntity dt = taskDetailService.getById(resid);
         if(dt != null){
-            dt.setScore(score);
-            dt.setStatus(1);
-            taskDetailService.updateById(dt);
             //////
             YTaskRunEntity runtask = taskRunService.getById(dt.getRunid());
+
+            if(runtask.getTasktype().equals("实训")){
+                dt.setScore(0.0f);
+            }else{
+                dt.setScore(score);
+            }
+
+            dt.setStatus(1);
+            taskDetailService.updateById(dt);
 
             Integer nextStep = taskDetailService.GetNextStep(dt.getRunid(), dt.getTaskstep());
 
